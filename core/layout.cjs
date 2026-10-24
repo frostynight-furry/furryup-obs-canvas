@@ -13,6 +13,7 @@
       visible: ['comments','songs','animations'].includes(id), locked: id === 'animations', layer: i })) };
   }
   function validate(profile, orientation) {
+    if (!Object.hasOwn(sizes, orientation)) throw new Error('画布方向无效');
     const size = sizes[orientation];
     if (!size || !profile || !Array.isArray(profile.modules) || profile.modules.length !== modules.length) throw new Error('画布布局无效');
     const found = new Set();
@@ -42,6 +43,7 @@
     state.profiles[orientation] = next; return state;
   }
   function bound(item, orientation) {
+    if (!Object.hasOwn(sizes, orientation)) throw new Error('画布方向无效');
     const size = sizes[orientation];
     const width = Math.min(size.width, Math.max(80, Math.round(item.width))), height = Math.min(size.height, Math.max(60, Math.round(item.height)));
     return { ...item, width, height, x: Math.max(0, Math.min(size.width - width, Math.round(item.x))), y: Math.max(0, Math.min(size.height - height, Math.round(item.y))) };

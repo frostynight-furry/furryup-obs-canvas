@@ -2,6 +2,16 @@
 const test=require('node:test'), assert=require('node:assert/strict'), {EventEmitter}=require('node:events');
 const model=require('../core/layout.cjs');
 
+test('all public geometry entry points reject inherited or unknown orientation keys',()=>{
+  const profile=model.preset('landscape');
+  for(const direction of ['__proto__','constructor','toString','unknown','']){
+    assert.throws(()=>model.preset(direction),/画布方向/);
+    assert.throws(()=>model.validate(profile,direction),/画布方向/);
+    assert.throws(()=>model.bound(profile.modules[0],direction),/画布方向/);
+    assert.throws(()=>model.apply(model.normalize(),{orientation:direction,baseRevision:0,profile}),/画布方向/);
+  }
+});
+
 
 test('layer ordering handles ties, hidden modules, locked selections and leaves other properties intact',()=>{
   const original=model.preset('landscape');
