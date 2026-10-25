@@ -3,7 +3,7 @@
 window.FurryUPCanvasStream = url => {
   const params = new URLSearchParams(location.search);
   if (params.get('canvas') !== '1' || parent === window) return new EventSource(url);
-  const target = new EventTarget(), names = new Set(['appearance','overlay-control','retained-gifts','viewer-avatar','live-event','gift-notification-state','gift-animation-state','song-state']);
+  const target = new EventTarget(), names = new Set(Object.keys(window.FurryUPObsLayout.destinations).filter(name=>window.FurryUPObsLayout.destinations[name].includes(params.get('module'))));
   let opened = false;
   const receive = event => {
     if (event.source !== parent || event.origin !== location.origin || event.data?.kind !== 'canvas-event' || !names.has(event.data.name) || typeof event.data.data !== 'string') return;

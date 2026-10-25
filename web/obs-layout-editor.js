@@ -6,7 +6,7 @@
   const text = (node, read) => i18n.assign(node, 'textContent', () => i18n.t(typeof read === 'function' ? read() : read));
   const clone = value => JSON.parse(JSON.stringify(value));
   const drafts = {}, saved = {}, undo = { landscape:[], portrait:[] }, nodes = new Map();
-  let orientation = 'landscape', selected = 'songs', snapshot = null, busy = false, scale = 1, moving = false, active = true;
+  let orientation = 'landscape', selected = model.modules.includes('songs') ? 'songs' : model.modules[0], snapshot = null, busy = false, scale = 1, moving = false, active = true;
   let appearanceSignature = '';
   let layerDrag = null;
   const profile = () => drafts[orientation], selectedItem = () => profile()?.modules.find(item => item.id === selected);
@@ -14,10 +14,10 @@
   const tell = (message, error = false) => { text($('layout-status'), message); $('layout-status').dataset.error = String(error); };
   const remember = () => { undo[orientation].push(clone(profile())); if (undo[orientation].length > 50) undo[orientation].shift(); };
   function previewUrl(id) {
-    const route = id === 'poll' ? 'canvas-poll-preview' : model.routes[id];
+    const route = model.previewRoutes[id];
     const url = new URL(route, snapshot.outputUrl);
     url.searchParams.set('token', new URL(snapshot.outputUrl).searchParams.get('token'));
-    url.searchParams.set('preview', '1'); return url.href;
+    url.searchParams.set('preview', '1'); url.searchParams.set('module',id); return url.href;
   }
   function appearance(frame) {
     if (frame?.contentWindow && snapshot?.outputUrl) frame.contentWindow.postMessage({ kind:'layout-preview-appearance', appearance:snapshot.settings.appearance }, new URL(snapshot.outputUrl).origin);
@@ -144,7 +144,7 @@
       if (index < 0) index = rows.length;
       layerDrag.destination = index;
       for (const row of $('layout-layers').children) delete row.dataset.drop;
-      if (index < rows.length) rows[index].dataset.drop = 'before'; else rows.at(-1).dataset.drop = 'after';
+      if (index < rows.length) rows[index].dataset.drop = 'before'; else if(rows.length) rows.at(-1).dataset.drop = 'after';
     },
     end:event => endLayerDrag(event.type === 'dragcancel' || event.originalEvent?.type === 'pointercancel')
   } });
@@ -161,7 +161,13 @@
     update(selected, { [field]: field === 'layer' ? Math.min(20, Math.max(0, Math.round(value))) : value });
   };
   $('layout-undo').onclick = () => { if (!busy && undo[orientation].length) { drafts[orientation] = undo[orientation].pop(); render(); } };
-  $('layout-reload').onclick = () => { if (!busy) { remember(); drafts[orientation] = clone(saved[orientation]); tell('已载入当前直播布局'); render(); } };
+  $('layout-reload').onclick = async () => {
+    if (busy || moving) return;
+    const target=orientation; busy=true; render();
+    try { const state=await api.get(); receive(state); remember(); drafts[target]=clone(saved[target]); tell('已载入当前直播布局'); }
+    catch { tell('载入失败，当前草稿已保留',true); }
+    finally { busy=false; render(); }
+  };
   $('layout-reset').onclick = () => { if (!busy) { remember(); drafts[orientation] = { ...model.preset(orientation), revision:saved[orientation].revision }; tell('默认布局已放入预览，应用后生效'); render(); } };
   $('layout-expand').onclick = () => { $('obs-layout-editor').classList.toggle('layout-expanded'); fit(); };
   $('layout-copy').onclick = async () => {
