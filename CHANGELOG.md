@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0 (2026-11-08)
+
+- 新增 `core/edit-geometry.cjs`：提供 OBS 风格纯函数几何变换引擎，支持等比缩放、`Shift` 自由拉伸、`Alt` 边缘内缩裁切（`withCrop`）、智能中心/边缘吸附参考线（`snap`）与 `Ctrl` 临时跳过吸附、以及视口自适应缩放（`fitResize`）。
+- 增强 `core/layout.cjs`：新增可选 `sourceWidth`、`sourceHeight` 与四边 `crop` 校验与边界约束（`bound`），支持裁切后小尺寸源块精确定位。
+- 新增 `test/edit-geometry.test.cjs` 几何手势与裁切单元测试。
+
 ## 0.2.0 — 2026-10-26 — Preview
 
 - Trusted, validated module registry shared by the editor, composite output and child event transport; the default seven-module API remains compatible. The CLI demonstrates an eighth synthetic status card.

@@ -1,13 +1,13 @@
 # FurryUP OBS Canvas
 
-[English](README.en.md) · MIT · **0.2.0 预览版**
+[English](README.en.md) · MIT · **0.3.0 预览版**
 
 由[夜霜（FrostyNight）](https://github.com/frostynight-furry)发起并维护，源自 FurryUP Studio 的通用画布组件。
 
 - **主播想直接使用完整产品：** [了解 FurryUP Studio](https://frostynight.top/furryup) · [下载安装包](https://github.com/frostynight-furry/furryup-studio-releases)。
 - **开发者想体验或集成组件：** [立即体验](#立即体验) · [集成文档](docs/INTEGRATION.md)。
 
-在一个画布中摆放互动模块，OBS 只添加一个透明浏览器源。提供横屏 **1920×1080**、竖屏 **1080×1920** 两套独立布局，拖动、缩放、层级排序、显示/锁定、撤销与显式应用。
+在一个画布中摆放互动模块，OBS 只添加一个透明浏览器源。提供横屏 **1920×1080**、竖屏 **1080×1920** 两套独立布局，支持 OBS 风格原生指针手势（等比缩放、`Shift` 自由拉伸、`Alt` 边缘裁切、`Ctrl` 跳过吸附对齐参考线）、层级排序、显示/锁定、撤销与显式应用（见 `core/edit-geometry.cjs` 与 `core/layout.cjs`）。
 
 从 FurryUP Studio 的画布编辑器拆分，包含独立本机示例服务。七种基础模块和一个可扩展状态模块使用**合成展示内容**：没有直播平台采集、音乐账号、实际点歌或礼物业务逻辑。**真实直播持续运行尚未验收**，不是经过实播验证的稳定发行版。
 

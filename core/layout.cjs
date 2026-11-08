@@ -46,9 +46,16 @@
         if (!item || !modules.includes(item.id) || found.has(item.id)) throw new Error('画布模块无效');
         found.add(item.id);
         for (const key of ['x','y','width','height','layer']) if (!Number.isInteger(item[key])) throw new Error('画布尺寸必须为整数');
-        if (item.x < 0 || item.y < 0 || item.width < 80 || item.height < 60 || item.x + item.width > size.width || item.y + item.height > size.height ||
+        if (item.x < 0 || item.y < 0 || item.width < (item.sourceWidth ? 2 : 80) || item.height < (item.sourceHeight ? 2 : 60) || item.x + item.width > size.width || item.y + item.height > size.height ||
           item.layer < 0 || item.layer > 20 || typeof item.visible !== 'boolean' || typeof item.locked !== 'boolean') throw new Error('模块超出画布或属性无效');
-        return { id: item.id, x: item.x, y: item.y, width: item.width, height: item.height, visible: item.visible, locked: item.locked, layer: item.layer };
+        const extra = {};
+        if (item.sourceWidth !== undefined || item.sourceHeight !== undefined || item.crop !== undefined) {
+          if (!Number.isInteger(item.sourceWidth) || !Number.isInteger(item.sourceHeight) || item.sourceWidth < 2 || item.sourceHeight < 2 || item.sourceWidth > 16384 || item.sourceHeight > 16384) throw new Error('来源尺寸无效');
+          const c = { left: 0, top: 0, right: 0, bottom: 0, ...item.crop };
+          if (Object.keys(c).length !== 4 || Object.values(c).some(v => !Number.isInteger(v) || v < 0) || c.left + c.right > item.sourceWidth - 2 || c.top + c.bottom > item.sourceHeight - 2) throw new Error('裁切范围无效');
+          Object.assign(extra, { sourceWidth: item.sourceWidth, sourceHeight: item.sourceHeight, crop: c });
+        }
+        return { id: item.id, x: item.x, y: item.y, width: item.width, height: item.height, visible: item.visible, locked: item.locked, layer: item.layer, ...extra };
       });
       return { revision: Number.isSafeInteger(profile.revision) && profile.revision >= 0 ? profile.revision : 0, modules: list };
     }
@@ -84,7 +91,7 @@
     function bound(item, orientation) {
       if (!Object.hasOwn(sizes, orientation)) throw new Error('画布方向无效');
       const size = sizes[orientation];
-      const width = Math.min(size.width, Math.max(80, Math.round(item.width))), height = Math.min(size.height, Math.max(60, Math.round(item.height)));
+      const width = Math.min(size.width, Math.max(item.sourceWidth ? 2 : 80, Math.round(item.width))), height = Math.min(size.height, Math.max(item.sourceHeight ? 2 : 60, Math.round(item.height)));
       return { ...item, width, height, x: Math.max(0, Math.min(size.width - width, Math.round(item.x))), y: Math.max(0, Math.min(size.height - height, Math.round(item.y))) };
     }
     // Highest layer first; equal layers follow browser paint order (last sibling wins).
